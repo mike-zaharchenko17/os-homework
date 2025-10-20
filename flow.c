@@ -14,6 +14,15 @@ typedef struct {
 static Node nodeArray[MAX_NODES];
 static int node_count = 0;
 
+int parseLine(char buffer[]) {
+    char *split_ptr = strtok(buffer, "=");
+    while (split_ptr) {
+        printf("%s\n", split_ptr);
+        split_ptr = strtok(NULL, "=");
+    }
+    return 0;
+}
+
 int main(int argc, char *argv[]) {
     if (argc < 2) {
         fprintf(stderr, "usage: %s <flowfile>\n", argv[0]);
@@ -26,6 +35,12 @@ int main(int argc, char *argv[]) {
     if (f == NULL) {
         fprintf(stderr, "unable to open file");
         return 1;
+    }
+
+    char buffer[LINE_LEN];
+
+    while (fgets(buffer, LINE_LEN, f)) {
+        parseLine(buffer);
     }
 
 
