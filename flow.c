@@ -14,6 +14,20 @@ typedef struct {
 static Node nodeArray[MAX_NODES];
 static int node_count = 0;
 
-int createNode() {
-    Node n = {"Fuck", "you"};
+int main(int argc, char *argv[]) {
+    if (argc < 2) {
+        fprintf(stderr, "usage: %s <flowfile>\n", argv[0]);
+        return 1;
+    }
+
+    // open .flow
+    FILE *f = fopen(argv[1], "r");
+
+    if (f == NULL) {
+        fprintf(stderr, "unable to open file");
+        return 1;
+    }
+
+
+    return 0;
 }
