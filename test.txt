@@ -1,1 +1,5 @@
 node=hello
+command=print hello
+
+node=goodbye
+command=print goodbye

@@ -14,12 +14,22 @@ typedef struct {
 static Node nodeArray[MAX_NODES];
 static int node_count = 0;
 
+
+// defines a buffered node externally so it's accessible and 'partializable'
+extern Node bufferedNode;
+
 int parseLine(char buffer[]) {
-    char *split_ptr = strtok(buffer, "=");
-    while (split_ptr) {
-        printf("%s\n", split_ptr);
-        split_ptr = strtok(NULL, "=");
+    char *key = strtok(buffer, "=");
+    char *value = strtok(buffer, "\n");
+
+    if (strcmp(key, "node") == 0) {
+        strcpy(bufferedNode.name, value);
     }
+
+    if (strcmp(key, "command") == 0) {
+        strcpy(bufferedNode.command, value);
+    }
+
     return 0;
 }
 
@@ -41,6 +51,12 @@ int main(int argc, char *argv[]) {
 
     while (fgets(buffer, LINE_LEN, f)) {
         parseLine(buffer);
+
+        if (bufferedNode.name[0] && bufferedNode.command[0]) {
+            // We have both; finalize the node by copying to array and clearing the buffer
+            nodeArray[node_count++] = bufferedNode;
+            memset(&bufferedNode, 0, sizeof bufferedNode);
+        }
     }
 
 
