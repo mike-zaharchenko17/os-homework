@@ -250,7 +250,10 @@ int run_pipe(const char *leftCmd, const char *rightCmd) {
 static int run_node_into_fd(const Node *n, int out_fd) {
     pid_t c = fork();
     if (c == 0) {
-        if (dup2(out_fd, STDOUT_FILENO) < 0) { perror("dup2"); _exit(127); }
+        if (dup2(out_fd, STDOUT_FILENO) < 0) { 
+            perror("dup2"); 
+            _exit(127); 
+        }
         execlp("sh", "sh", "-c", n->command, (char*)0);
         perror("exec node");
         _exit(127);
@@ -262,12 +265,18 @@ static int run_node_into_fd(const Node *n, int out_fd) {
 // Run STDERR of a node into out_fd (and silence its normal stdout)
 static int run_stderr_into_fd(const Stderr *sd, int out_fd) {
     const Node *n = get_node_by_name(node_array, node_count, sd->from_node);
-    if (!n) { fprintf(stderr,"stderr from unknown node '%s'\n", sd->from_node); return -1; }
+    if (!n) { 
+        fprintf(stderr,"stderr from unknown node '%s'\n", sd->from_node); 
+        return -1; 
+    }
 
     pid_t c = fork();
     if (c == 0) {
         // redirect this child's STDERR to out_fd
-        if (dup2(out_fd, STDERR_FILENO) < 0) { perror("dup2 err"); _exit(127); }
+        if (dup2(out_fd, STDERR_FILENO) < 0) {
+             perror("dup2 err"); 
+             _exit(127); 
+        }
 
         // silence its STDOUT so it doesn't mix with errors
         int devnull = open("/dev/null", O_WRONLY);
@@ -287,11 +296,14 @@ static int run_stderr_into_fd(const Stderr *sd, int out_fd) {
 // Run a pipe and send the RIGHT side's STDOUT into out_fd
 static int run_pipe_into_fd(const Pipe *p, int out_fd) {
     // set up the inner ls|wc, but make wc's stdout go to out_fd
-    int fd[2]; if (pipe(fd) < 0) { perror("pipe"); return -1; }
+    int fd[2]; if (pipe(fd) < 0) { 
+        perror("pipe"); 
+        return -1; 
+    }
 
     const Node *from = get_node_by_name(node_array, node_count, p->from);
     const Node *to = get_node_by_name(node_array, node_count, p->to);
-    
+
     if (!from || !to) { 
         fprintf(stderr,"bad pipe endpoints\n"); 
         close(fd[0]); 
@@ -322,7 +334,7 @@ static int run_pipe_into_fd(const Pipe *p, int out_fd) {
     return (WIFEXITED(st)? WEXITSTATUS(st) : -1);
 }
 
-// Run a concatenate by sequentially running each part into out_fd
+// run a concatenate by sequentially running each part into out_fd
 static int run_concat_into_fd(const Concat *c, int out_fd) {
     for (int i = 0; i < c->parts; i++) {
         const char *name = c->part_name[i];
