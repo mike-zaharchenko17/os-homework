@@ -4,6 +4,8 @@ For this assignment, I ran experiments in two environments: on my computer (MacO
 
 Predictably, results in the Codespaces machine were slower and benefitted less from concurrency. Likewise, the unsafe threads lost less keys in Codespaces.
 
+Charts (as well as % diff calcuations) will be included in the corresponding PDF.
+
 ### Question 1
 
 **Code Trace**
@@ -99,7 +101,7 @@ Due to the barrier, there is no potential for a race condition between the put p
 | 12          | 0.003846       | 1.843432         | 98%         | 2%     |
 
 
-In codespaces, you can expect a slowdown of about 2-3x using the mutex implementation as opposed to the unsafe implementation during the put phase.
+In codespaces, you can expect an average slowdown of about 101% using the mutex implementation (and guaranteeing correctness) as opposed to the unsafe implementation during the put phase.
 
 Since there is no mutex placed on the retrieval process, the time to retrieve is largely the same across all thread counts.
 
@@ -139,7 +141,7 @@ I imagine that if our critical section was heavier, the mutex would be more effi
 
 *** Estimate ***
 
-With the spinlock, performance is roughly comparable to the unlocked implementation (again, codespaces). You can expect slowdowns of about 1.2x (revisit this with actual math)
+With the spinlock, performance is roughly comparable to the unlocked implementation (again, codespaces). You can expect speedups of about 37%.
 
 ### Question 3
 
@@ -194,7 +196,7 @@ Note: we define a 'bucket' as `table[i]`- the head of one linked list of entries
 | 8           | 0.006862       | 2.013532         | 100%        | 0%     |
 | 12          | 0.007648       | 2.087144         | 100%        | 0%     |
 
-For every number of threads except 1, the bucket mutex offers faster insertions.
+The bucket mutex offers increased performance for every thread count except 1. It gives you an insertion speedup of about 14%.
 
 
 
