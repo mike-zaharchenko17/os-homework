@@ -1,4 +1,4 @@
-# Assignment-04 README 
+## Assignment-04 README 
 
 For this assignment, I ran experiments in two environments: on my computer (MacOS, 14 core) and on GitHub Codespaces (Linux, 4 core). This is because MacOS doesn't have pthread_spinlock_t.
 
@@ -18,8 +18,7 @@ In each thread:
 		- in a single threaded environment, this will just iterate through everything from 0
 		- in a multi-threaded environment, we'll use the TID's as an initial offset and increment by the number of threads 
 			- so, given 5 threads
-				- t0 handles 0, 5, 10, ..
-				- .
+				- t0 handles 0, 5, 10, ...
 				- t1 handles 1, 6, 11, ...
 				- t2 handles 2, 7, 12, ...
 				- t3 handles 3, 8, 13, ...
