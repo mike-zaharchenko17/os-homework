@@ -173,8 +173,29 @@ Note: we define a 'bucket' as table[i]- the head of one linked list of entries a
 	- removed the lock/unlock with the global mutex from the critical section
 	- replaced it with a lock/unlock that uses the mutex that corresponds to index key % NUM_BUCKETS
 
+*** Bucket Mutex vs. Regular Mutex (Codespaces) ***
 
+*** Bucket Mutex ***
 
+| Num Threads | Time to Insert | Time to Retrieve | % Retrieved | % Lost |
+|-------------|----------------|------------------|-------------|--------|
+| 1           | 0.007024       | 7.405606         | 100%        | 0%     |
+| 2           | 0.004901       | 3.830748         | 100%        | 0%     |
+| 4           | 0.005609       | 2.050706         | 100%        | 0%     |
+| 8           | 0.006153       | 1.741811         | 100%        | 0%     |
+| 12          | 0.006265       | 1.882165         | 100%        | 0%     |
+
+*** Mutex ***
+
+| Num Threads | Time To Insert | Time to Retrieve | % Retrieved | % Lost |
+|-------------|----------------|------------------|-------------|--------|
+| 1           | 0.006021       | 7.147848         | 100%        | 0%     |
+| 2           | 0.00813        | 3.571987         | 100%        | 0%     |
+| 4           | 0.006709       | 1.727046         | 100%        | 0%     |
+| 8           | 0.006862       | 2.013532         | 100%        | 0%     |
+| 12          | 0.007648       | 2.087144         | 100%        | 0%     |
+
+For every number of threads except 1, the bucket mutex offers faster insertions.
 
 
 
