@@ -1,6 +1,10 @@
 # Assignment-04 README 
 
-### Question 1
+For this assignment, I ran experiments in two environments: on my computer (MacOS, 14 core) and on GitHub Codespaces (Linux, 4 core). This is because MacOS doesn't have pthread_spinlock_t.
+
+Predictably, results in the Codespaces machine were slower and benefitted less from concurrency. Likewise, the unsafe threads lost less keys in Codespaces.
+
+## Question 1
 
 **Code Trace**
 
@@ -51,6 +55,10 @@ Thus, the key is lost.
 
 Due to the barrier, there is no potential for a race condition between the put phase and the get phase (like if the retrieval threads were reading from the hash map as the insertion threads were modifying it). There is no direct potential for a race condition in the retrieval code either as no writes are being performed.
 
+*** MacOS Mutex vs. No Mutex ***
+
+*** Mutex ***
+
 | Mutex | Num Threads | Time To Insert | Time to Retrieve | % Retrieved | % Loss |
 | ----- | ----------- | -------------- | ---------------- | ----------- | ------ |
 | TRUE  | 1           | 0.002307       | 1.201325         | 100%        | 0%     |
@@ -58,6 +66,8 @@ Due to the barrier, there is no potential for a race condition between the put p
 | TRUE  | 4           | 0.007622       | 0.472902         | 100%        | 0%     |
 | TRUE  | 8           | 0.006069       | 0.271812         | 100%        | 0%     |
 | TRUE  | 12          | 0.006252       | 0.23633          | 100%        | 0%     |
+
+*** No Mutex ***
 
 | Mutex | Num Threads | Time To Insert | Time to Retrieve | % Retrieved | % Loss |
 | ----- | ----------- | -------------- | ---------------- | ----------- | ------ |
@@ -67,8 +77,77 @@ Due to the barrier, there is no potential for a race condition between the put p
 | FALSE | 8           | 0.005925       | 0.28013          | 55%         | 45%    |
 | FALSE | 12          | 0.003983       | 0.253012         | 51%         | 49%    |
 
-For insertion, you can expect a 1.5-2x slowdown when guaranteeing correctness with the mutex.
+*** Codespaces Mutex vs. No Mutex ***
 
-n_threads=8 is the outlier, as it performs roughly the same on both the mutex and no-mutex implementation.
+*** Mutex ***
+
+| Num Threads | Time To Insert | Time to Retrieve | % Retrieved | % Lost |
+|-------------|----------------|------------------|-------------|--------|
+| 1           | 0.006021       | 7.147848         | 100%        | 0%     |
+| 2           | 0.00813        | 3.571987         | 100%        | 0%     |
+| 4           | 0.006709       | 1.727046         | 100%        | 0%     |
+| 8           | 0.006862       | 2.013532         | 100%        | 0%     |
+| 12          | 0.007648       | 2.087144         | 100%        | 0%     |
+
+*** No Mutex ***
+
+| Num Threads | Time To Insert | Time to Retrieve | % Retrieved | % Lost |
+|-------------|----------------|------------------|-------------|--------|
+| 1           | 0.005542       | 7.238285         | 100%        | 0%     |
+| 2           | 0.00317        | 4.043671         | 97%         | 3%     |
+| 4           | 0.002577       | 1.828751         | 98%         | 2%     |
+| 8           | 0.003365       | 1.963509         | 98%         | 2%     |
+| 12          | 0.003846       | 1.843432         | 98%         | 2%     |
+
+
+In codespaces, you can expect a slowdown of about 2-3x using the mutex implementation as opposed to the unsafe implementation during the put phase.
 
 Since there is no mutex placed on the retrieval process, the time to retrieve is largely the same across all thread counts.
+
+### Question 2
+
+*** Intuition/Hypothesis ***
+
+Since this is a high contention scenario (only 5 buckets), I would expect the mutex to win. We would waste cycles busy waiting, which should degrade performance despite the lightweight critical section.
+
+*** Spinlock Results vs. Mutex (Codespaces) ***
+
+*** Spinlock ***
+
+| Num Threads | Time To Insert | Time to Retrieve | % Retrieved | % Lost |
+|-------------|----------------|------------------|-------------|--------|
+| 1           | 0.005664       | 7.373502         | 100%        | 0%     |
+| 2           | 0.004688       | 3.660478         | 100%        | 0%     |
+| 4           | 0.00336        | 1.649929         | 100%        | 0%     |
+| 8           | 0.004088       | 1.806454         | 100%        | 0%     |
+| 12          | 0.004203       | 1.800111         | 100%        | 0%     |
+
+*** Mutex ***
+
+| Num Threads | Time To Insert | Time to Retrieve | % Retrieved | % Lost |
+|-------------|----------------|------------------|-------------|--------|
+| 1           | 0.006021       | 7.147848         | 100%        | 0%     |
+| 2           | 0.00813        | 3.571987         | 100%        | 0%     |
+| 4           | 0.006709       | 1.727046         | 100%        | 0%     |
+| 8           | 0.006862       | 2.013532         | 100%        | 0%     |
+| 12          | 0.007648       | 2.087144         | 100%        | 0%     |
+
+| Num Threads | Time To Insert | Time to Retrieve | % Retrieved | % Lost |
+|-------------|----------------|------------------|-------------|--------|
+| 1           | 0.005542       | 7.238285         | 100%        | 0%     |
+| 2           | 0.00317        | 4.043671         | 97%         | 3%     |
+| 4           | 0.002577       | 1.828751         | 98%         | 2%     |
+| 8           | 0.003365       | 1.963509         | 98%         | 2%     |
+| 12          | 0.003846       | 1.843432         | 98%         | 2%     |
+
+*** Conclusion ***
+
+My hypothesis was incorrect. The spinlock is faster than the mutex across all thread counts. This is likely because a mutex is more expensive than a spinlock to lock/unlock, and the lock/unlock cost dominates.
+
+I imagine that if our critical section was heavier, the mutex would be more efficient because the impacts of busy-wait would become more apparent.
+
+*** Estimate ***
+
+With the spinlock, performance is roughly comparable to the 
+
+

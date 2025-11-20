@@ -142,5 +142,7 @@ int main(int argc, char **argv) {
 
   printf("[main] Retrieved %ld/%d keys in %f seconds\n", NUM_KEYS - total_lost, NUM_KEYS, end - start);
 
+  pthread_mutex_destroy(&mutex);
+
   return 0;
 }
