@@ -56,9 +56,9 @@ Thus, the key is lost.
 
 Due to the barrier, there is no potential for a race condition between the put phase and the get phase (like if the retrieval threads were reading from the hash map as the insertion threads were modifying it). There is no direct potential for a race condition in the retrieval code either as no writes are being performed.
 
-*** MacOS Mutex vs. No Mutex ***
+MacOS Mutex vs. No Mutex **
 
-*** Mutex ***
+Mutex **
 
 | Mutex | Num Threads | Time To Insert | Time to Retrieve | % Retrieved | % Loss |
 | ----- | ----------- | -------------- | ---------------- | ----------- | ------ |
@@ -68,7 +68,7 @@ Due to the barrier, there is no potential for a race condition between the put p
 | TRUE  | 8           | 0.006069       | 0.271812         | 100%        | 0%     |
 | TRUE  | 12          | 0.006252       | 0.23633          | 100%        | 0%     |
 
-*** No Mutex ***
+No Mutex **
 
 | Mutex | Num Threads | Time To Insert | Time to Retrieve | % Retrieved | % Loss |
 | ----- | ----------- | -------------- | ---------------- | ----------- | ------ |
@@ -78,9 +78,9 @@ Due to the barrier, there is no potential for a race condition between the put p
 | FALSE | 8           | 0.005925       | 0.28013          | 55%         | 45%    |
 | FALSE | 12          | 0.003983       | 0.253012         | 51%         | 49%    |
 
-*** Codespaces Mutex vs. No Mutex ***
+Codespaces Mutex vs. No Mutex **
 
-*** Mutex ***
+Mutex **
 
 | Num Threads | Time To Insert | Time to Retrieve | % Retrieved | % Lost |
 |-------------|----------------|------------------|-------------|--------|
@@ -90,7 +90,7 @@ Due to the barrier, there is no potential for a race condition between the put p
 | 8           | 0.006862       | 2.013532         | 100%        | 0%     |
 | 12          | 0.007648       | 2.087144         | 100%        | 0%     |
 
-*** No Mutex ***
+No Mutex **
 
 | Num Threads | Time To Insert | Time to Retrieve | % Retrieved | % Lost |
 |-------------|----------------|------------------|-------------|--------|
@@ -107,13 +107,13 @@ Since there is no mutex placed on the retrieval process, the time to retrieve is
 
 ### Question 2
 
-*** Intuition/Hypothesis ***
+Intuition/Hypothesis **
 
 Since this is a high contention scenario (only 5 buckets), I would expect the mutex to win. We would waste cycles busy waiting, which should degrade performance despite the lightweight critical section.
 
-*** Spinlock Results vs. Mutex (Codespaces) ***
+Spinlock Results vs. Mutex (Codespaces) **
 
-*** Spinlock ***
+Spinlock **
 
 | Num Threads | Time To Insert | Time to Retrieve | % Retrieved | % Lost |
 |-------------|----------------|------------------|-------------|--------|
@@ -123,7 +123,7 @@ Since this is a high contention scenario (only 5 buckets), I would expect the mu
 | 8           | 0.004088       | 1.806454         | 100%        | 0%     |
 | 12          | 0.004203       | 1.800111         | 100%        | 0%     |
 
-*** Mutex ***
+Mutex **
 
 | Num Threads | Time To Insert | Time to Retrieve | % Retrieved | % Lost |
 |-------------|----------------|------------------|-------------|--------|
@@ -133,13 +133,13 @@ Since this is a high contention scenario (only 5 buckets), I would expect the mu
 | 8           | 0.006862       | 2.013532         | 100%        | 0%     |
 | 12          | 0.007648       | 2.087144         | 100%        | 0%     |
 
-*** Conclusion ***
+**Conclusion**
 
 My hypothesis was incorrect. The spinlock is faster than the mutex across all thread counts. This is likely because a mutex is more expensive than a spinlock to lock/unlock, and the lock/unlock cost dominates.
 
 I imagine that if our critical section was heavier, the mutex would be more efficient because the impacts of busy-wait would become more apparent.
 
-*** Estimate ***
+**Estimate**
 
 With the spinlock, performance is roughly comparable to the unlocked implementation (again, codespaces). You can expect speedups of about 37%.
 
@@ -151,7 +151,7 @@ I implemented this in parallel_mutex.c (instead of, say, wrapping both insert an
 
 ### Question 4
 
-*** When can insertions be parallelized? ***
+When can insertions be parallelized? **
 
 Multiple insertions can happen safely if there is no conflict for the same bucket. 
 
@@ -161,7 +161,7 @@ We can achieve this using per bucket mutexes
 
 Note: we define a 'bucket' as `table[i]`- the head of one linked list of entries and a 'conflict for the same bucket' as key1 % BUCKET_NUM == key2 % BUCKET_NUM
 
-*** Changes to parallel_mutex_opt.c ***
+Changes to parallel_mutex_opt.c **
 
 - global
 	- removed the global mutex
@@ -174,9 +174,9 @@ Note: we define a 'bucket' as `table[i]`- the head of one linked list of entries
 	- removed the lock/unlock with the global mutex from the critical section
 	- replaced it with a lock/unlock that uses the mutex that corresponds to index key % NUM_BUCKETS
 
-*** Bucket Mutex vs. Regular Mutex (Codespaces) ***
+Bucket Mutex vs. Regular Mutex (Codespaces) **
 
-*** Bucket Mutex ***
+Bucket Mutex **
 
 | Num Threads | Time to Insert | Time to Retrieve | % Retrieved | % Lost |
 |-------------|----------------|------------------|-------------|--------|
@@ -186,7 +186,7 @@ Note: we define a 'bucket' as `table[i]`- the head of one linked list of entries
 | 8           | 0.006153       | 1.741811         | 100%        | 0%     |
 | 12          | 0.006265       | 1.882165         | 100%        | 0%     |
 
-*** Mutex ***
+Mutex **
 
 | Num Threads | Time To Insert | Time to Retrieve | % Retrieved | % Lost |
 |-------------|----------------|------------------|-------------|--------|
