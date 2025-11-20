@@ -4,7 +4,7 @@ For this assignment, I ran experiments in two environments: on my computer (MacO
 
 Predictably, results in the Codespaces machine were slower and benefitted less from concurrency. Likewise, the unsafe threads lost less keys in Codespaces.
 
-## Question 1
+### Question 1
 
 **Code Trace**
 
@@ -149,6 +149,12 @@ I imagine that if our critical section was heavier, the mutex would be more effi
 *** Estimate ***
 
 With the spinlock, performance is roughly comparable to the unlocked implementation (again, codespaces). You can expect slowdowns of about 1.2x (revisit this with actual math)
+
+### Question 3
+
+We don't need a lock. All insert operations complete before any retrieval operations begin, and the main thread waits for all inserter threads to finish using pthread_join. This creates a barrier between the put phase and the get phase. After that barrier, the hash table is read-only- no thread modifies it during retrieval. Since there are no concurrent writers, multiple threads can safely call retrieve in parallel without locking.
+
+I implemented this in parallel_mutex.c (instead of, say, wrapping both insert and retrieve with a mutex) so I'll just copy and paste that code.
 
 
 
