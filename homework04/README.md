@@ -153,11 +153,11 @@ I implemented this in parallel_mutex.c (instead of, say, wrapping both insert an
 
 Multiple insertions can happen safely if there is no conflict for the same bucket. 
 
-We've identified our race condition as something that occurs when multiple threads attempt to access the same table[i] value at the same time and then overwrite the changes that another thread has made, so if we prevent that from happening, we can have parallel insertions.
+We've identified our race condition as something that occurs when multiple threads attempt to access the same `table[i]` value at the same time and then overwrite the changes that another thread has made, so if we prevent that from happening, we can have parallel insertions.
 
 We can achieve this using per bucket mutexes
 
-Note: we define a 'bucket' as table[i]- the head of one linked list of entries and a 'conflict for the same bucket' as key1 % BUCKET_NUM == key2 % BUCKET_NUM
+Note: we define a 'bucket' as `table[i]`- the head of one linked list of entries and a 'conflict for the same bucket' as key1 % BUCKET_NUM == key2 % BUCKET_NUM
 
 *** Changes to parallel_mutex_opt.c ***
 
