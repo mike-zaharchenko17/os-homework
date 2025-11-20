@@ -148,6 +148,8 @@ I imagine that if our critical section was heavier, the mutex would be more effi
 
 *** Estimate ***
 
-With the spinlock, performance is roughly comparable to the 
+With the spinlock, performance is roughly comparable to the unlocked implementation (again, codespaces). You can expect slowdowns of about 1.2x (revisit this with actual math)
+
+
 
 
