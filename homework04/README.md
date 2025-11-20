@@ -132,14 +132,6 @@ Since this is a high contention scenario (only 5 buckets), I would expect the mu
 | 8           | 0.006862       | 2.013532         | 100%        | 0%     |
 | 12          | 0.007648       | 2.087144         | 100%        | 0%     |
 
-| Num Threads | Time To Insert | Time to Retrieve | % Retrieved | % Lost |
-|-------------|----------------|------------------|-------------|--------|
-| 1           | 0.005542       | 7.238285         | 100%        | 0%     |
-| 2           | 0.00317        | 4.043671         | 97%         | 3%     |
-| 4           | 0.002577       | 1.828751         | 98%         | 2%     |
-| 8           | 0.003365       | 1.963509         | 98%         | 2%     |
-| 12          | 0.003846       | 1.843432         | 98%         | 2%     |
-
 *** Conclusion ***
 
 My hypothesis was incorrect. The spinlock is faster than the mutex across all thread counts. This is likely because a mutex is more expensive than a spinlock to lock/unlock, and the lock/unlock cost dominates.
@@ -155,6 +147,24 @@ With the spinlock, performance is roughly comparable to the unlocked implementat
 We don't need a lock. All insert operations complete before any retrieval operations begin, and the main thread waits for all inserter threads to finish using pthread_join. This creates a barrier between the put phase and the get phase. After that barrier, the hash table is read-only- no thread modifies it during retrieval. Since there are no concurrent writers, multiple threads can safely call retrieve in parallel without locking.
 
 I implemented this in parallel_mutex.c (instead of, say, wrapping both insert and retrieve with a mutex) so I'll just copy and paste that code.
+
+### Question 4
+
+*** When can insertions be parallelized? ***
+
+Multiple insertions can happen safely if there is no conflict for the same bucket. 
+
+We've identified our race condition as something that occurs when multiple threads attempt to access the same table[i] value at the same time and then overwrite the changes that another thread has made, so if we prevent that from happening, we can have parallel insertions.
+
+We can achieve this using per bucket mutexes
+
+Note: we define a 'bucket' as table[i]- the head of one linked list of entries and a 'conflict for the same bucket' as key1 % BUCKET_NUM == key2 % BUCKET_NUM
+
+*** Changes to parallel_mutex_opt.c ***
+
+
+
+
 
 
 

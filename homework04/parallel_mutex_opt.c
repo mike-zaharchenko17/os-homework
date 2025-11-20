@@ -10,6 +10,7 @@
 
 #define NUM_BUCKETS 5     // Buckets in hash table
 #define NUM_KEYS 100000   // Number of keys inserted per thread
+
 int num_threads = 1;      // Number of threads (configurable)
 int keys[NUM_KEYS];
 
@@ -21,7 +22,7 @@ typedef struct _bucket_entry {
 
 bucket_entry *table[NUM_BUCKETS];
 
-pthread_mutex_t mutex;
+pthread_mutex_t *mutexes;
 
 void panic(char *msg) {
   printf("%s\n", msg);
@@ -37,15 +38,16 @@ double now() {
 // Inserts a key-value pair into the table
 void insert(int key, int val) {
   int i = key % NUM_BUCKETS;
+
   bucket_entry *e = (bucket_entry *) malloc(sizeof(bucket_entry));
   if (!e) panic("No memory to allocate bucket!");
   
-  pthread_mutex_lock(&mutex);
+  pthread_mutex_lock(&mutexes[i]);
   e->next = table[i];
   e->key = key;
   e->val = val;
   table[i] = e;
-  pthread_mutex_unlock(&mutex);
+  pthread_mutex_unlock(&mutexes[i]);
 }
 
 // Retrieves an entry from the hash table by key
@@ -101,9 +103,21 @@ int main(int argc, char **argv) {
   for (i = 0; i < NUM_KEYS; i++)
     keys[i] = random();
 
-  threads = (pthread_t *) malloc(sizeof(pthread_t)*num_threads);
+  // init mutexes and populate array
 
-  pthread_mutex_init(&mutex, NULL);
+  mutexes = (pthread_mutex_t *) malloc(sizeof(pthread_mutex_t) * NUM_BUCKETS);
+  
+  if (!mutexes) {
+    panic("out of memory allocating mutex handles");
+  }
+
+  for (i = 0; i < NUM_BUCKETS; i++) {
+    pthread_mutex_init(&mutexes[i], NULL);
+  }
+
+  // init threads
+
+  threads = (pthread_t *) malloc(sizeof(pthread_t)*num_threads);
 
   if (!threads) {
     panic("out of memory allocating thread handles");
@@ -143,7 +157,9 @@ int main(int argc, char **argv) {
 
   printf("[main] Retrieved %ld/%d keys in %f seconds\n", NUM_KEYS - total_lost, NUM_KEYS, end - start);
 
-  pthread_mutex_destroy(&mutex);
+  for (i = 0; i < NUM_BUCKETS; i++) {
+    pthread_mutex_destroy(&mutexes[i]);
+  }
 
   return 0;
 }
