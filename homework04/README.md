@@ -162,6 +162,19 @@ Note: we define a 'bucket' as table[i]- the head of one linked list of entries a
 
 *** Changes to parallel_mutex_opt.c ***
 
+- global
+	- removed the global mutex
+	- declared an array of mutexes in the global scope
+- main
+	- allocated space for the global mutex array s/t to accommodate NUM_BUCKETS mutexes s/t mutex i corresponds to bucket i
+	- initialized mutexes in a loop (similarly to how threads are created in the code)
+	- destroyed mutexes after completion
+- insert
+	- removed the lock/unlock with the global mutex from the critical section
+	- replaced it with a lock/unlock that uses the mutex that corresponds to index key % NUM_BUCKETS
+
+
+
 
 
 
